@@ -25,6 +25,9 @@ class MyAI ( Agent ):
         # ======================================================================
         # YOUR CODE BEGINS
         # ======================================================================
+        self.first = [0,0]
+        self.count = 0
+        self.moved = []
         # ======================================================================
         # YOUR CODE ENDS
         # ======================================================================
@@ -33,9 +36,36 @@ class MyAI ( Agent ):
         # ======================================================================
         # YOUR CODE BEGINS
         # ======================================================================
-        if breeze:
-            Agent.Action.SHOOT
-        return Agent.Action.CLIMB
+        if breeze and len(self.moved) == 0:
+            return Agent.Action.CLIMB
+        elif stench and len(self.moved) == 0:
+            return Agent.Action.CLIMB
+        else:
+            if self.count == 0:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.FORWARD
+            elif self.count == 1:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.TURN_LEFT
+            elif self.count == 2:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.TURN_LEFT
+            elif self.count == 3:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.GRAB
+            elif self.count == 4:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.FORWARD
+            elif self.count == 5:
+                self.count += 1
+                self.moved.append(1)
+                return Agent.Action.CLIMB
+
         # ======================================================================
         # YOUR CODE ENDS
         # ======================================================================
