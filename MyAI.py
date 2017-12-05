@@ -33,7 +33,7 @@ class MyAI ( Agent ):
         self.next = [0,0]  #The current coordinate the agent is on
         self.direction = 0  # right = 0; up = 90; down = 270; left = 180;
         self.goup = False
-        #self.safelist = [([0,0],3),([0,1],3),([0,2],3),([0,3],3),([0,4],3)]
+        self.safelist = [[0,0]]
         self.row2 = False
     # ======================================================================
     # YOUR CODE ENDS
@@ -74,16 +74,7 @@ class MyAI ( Agent ):
         backlist.append(turnaround)
         backlist.append(turnaround)
         return backlist
-    def moveforaward(self):
-        if self.direction == 90:
-            self.next[0] += 1
-        elif self.direction == 270:
-            self.next[0] -= 1
-        elif self.direction == 180:
-            self.next[1] -= 1
-        elif self.direction == 0:
-            self.next[1] += 1
-        return Agent.Action.FORWARD
+
 
     def gotgold(self):
         """
@@ -101,11 +92,9 @@ class MyAI ( Agent ):
         if self.direction == dire and self.next == [0, 0]:
             return Agent.Action.CLIMB
         if move[1] == 1:
-            self.direction += 90
-            return Agent.Action.TURN_LEFT
+            return self.turnleft()
         elif move[1] == 2:
-            self.direction -= 90
-            return Agent.Action.TURN_RIGHT
+            return self.turnright()
         elif move[1] == 3:
             return self.moveforaward()
     def getAction( self, stench, breeze, glitter, bump, scream ):
@@ -131,11 +120,9 @@ class MyAI ( Agent ):
                     if self.direction == 270 and self.next == [0,0]:
                         return Agent.Action.CLIMB
                     if move[1] == 1:
-                        self.direction += 90
-                        return Agent.Action.TURN_LEFT
+                        return self.turnleft()
                     elif move[1] == 2:
-                        self.direction -= 90
-                        return Agent.Action.TURN_RIGHT
+                        return self.turnright()
                     elif move[1] == 3:
                         return self.moveforaward()
 
@@ -143,8 +130,7 @@ class MyAI ( Agent ):
                 self.back = True
                 temp = self.goback(self.moved)
                 self.backlist = temp
-                self.direction += 90
-                return Agent.Action.TURN_LEFT
+                return self.turnleft()
             if not breeze and not stench and not bump: #If the agent detect nothing
                 if self.count == 1:
                     self.count += 1
@@ -152,14 +138,13 @@ class MyAI ( Agent ):
                     return self.moveforaward()
                 elif self.count == 2:
                     self.count += 1
-                    self.direction -= 90
+
                     self.moved.append((self.next,2))
-                    return Agent.Action.TURN_RIGHT
+                    return self.turnright()
                 elif self.count == 0:           #Turn right since agent came from up  -> facing down  =270
-                    self.direction -= 90        # Turn right will make the direction 90 (270-90-90)
-                    self.count +=1
+                    self.count += 1                   # Turn right will make the direction 90 (270-90-90)
                     self.moved.append(((self.next),2))
-                    return Agent.Action.TURN_RIGHT
+                    return self.turnright()
                 else:
                     self.moved.append((self.next, 3))
                     return self.moveforaward()
@@ -174,23 +159,19 @@ class MyAI ( Agent ):
                     move = self.backlist.pop()
                     if self.direction == 270 and self.next == [0,0]:
                         self.row2 = True
-                        self.direction -= 90
                         self.moved = []
-                        return Agent.Action.TURN_RIGHT
+                        return self.turnright()
                     if move[1] == 1:
-                        self.direction += 90
-                        return Agent.Action.TURN_LEFT
+                        return self.turnleft()
                     elif move[1] == 2:
-                        self.direction -= 90
-                        return Agent.Action.TURN_RIGHT
+                        return self.turnright()
                     elif move[1] == 3:
                         return self.moveforaward()
             if breeze or stench or bump:                   # After meet one of those start move back (Triggers back)
                 self.back = True
                 temp = self.goback(self.moved)
                 self.backlist = temp
-                self.direction += 90
-                return Agent.Action.TURN_LEFT
+                return self.turnleft()
             if not breeze and not stench and not bump:        #The agent will keep go up when its not bumped
                 self.moved.append(((self.next),3))
                 return self.moveforaward()
@@ -199,10 +180,10 @@ class MyAI ( Agent ):
         if self.moved != [] and self.next == [0,0] and not self.gold:   #After going right agent backed to 0,0, but still didn't find the golf
             if not self.goup:                                           #It will trigger goup start going up
                 self.goup = True
-                self.direction -= 90
+
                 self.moved = []
                 self.moved.append(([0,0],2))
-                return Agent.Action.TURN_RIGHT
+                return self.turnright()
             else:
                 self.row2 = True                                        #After going up still did not find gold will go to row2
         if self.gold:                                          # Found gold during going to right
@@ -211,11 +192,9 @@ class MyAI ( Agent ):
             if self.backlist !=[]:
                 move = self.backlist.pop()
                 if move[1] == 1:
-                    self.direction +=90
-                    return Agent.Action.TURN_LEFT
+                    return self.turnleft()
                 elif move[1] == 2:
-                    self.direction -= 90
-                    return Agent.Action.TURN_RIGHT
+                    return self.turnright()
                 elif move[1] == 3:
                     return self.moveforaward()
         if self.next == [0,0]:
@@ -229,8 +208,7 @@ class MyAI ( Agent ):
             self.back = True
             temp = self.goback(self.moved)
             self.backlist = temp
-            self.direction += 90
-            return Agent.Action.TURN_LEFT
+            return self.turnleft()
         if not breeze and not stench and not bump:
             self.next[1] += 1
             self.moved.append((self.next,3))
@@ -242,9 +220,92 @@ class MyAI ( Agent ):
         # ======================================================================
         # YOUR CODE BEGINS
         # ======================================================================
+    def turnright(self):
+        self.direction -= 90
+        return Agent.Action.TURN_RIGHT
 
+    def turnleft(self):
+        self.direction += 90
+        return Agent.Action.TURN_LEFT
+    def moveforaward(self):
+        if self.direction == 90:
+            self.next[0] += 1
+        elif self.direction == 270:
+            self.next[0] -= 1
+        elif self.direction == 180:
+            self.next[1] -= 1
+        elif self.direction == 0:
+            self.next[1] += 1
+        return Agent.Action.FORWARD
 
+    def safeneighbor(self):  # Call this function when the agent is on nothing
+        for i in self.safelist:
+            if (i[0] - 1 == self.next[0] or i[0] + 1 == self.next[0]) and i[1] == self.next[1]:
+                return i
+    def toneighbor(self,n):  # steps to move to safe neighbor
+        """
+        @param n generate a random move by safeneighbor function
+        @return a list of actions 1 forward 2right 3 left
+        """
+        movelist = []
+        if self.next[0] == n[0]:
+            if self.next[1] == n[1] - 1:
+                if self.direction == 0:
+                    movelist.append(1)
+                elif self.direction == 90:
+                    movelist.append(2)
+                    movelist.append(1)
+                elif self.direction == 270:
+                    movelist.append(3)
+                    movelist.append(1)
+                elif self.direction == 180:
+                    movelist.append(3)
+                    movelist.append(3)
+                    movelist.append(1)
+            if self.next[1] == n[1] + 1:
+                if self.direction == 0:
+                    movelist.append(3)
+                    movelist.append(3)
+                    movelist.append(1)
+                elif self.direction == 90:
+                    movelist.append(3)
+                    movelist.append(1)
+                elif self.direction == 270:
+                    movelist.append(2)
+                    movelist.append(1)
+                elif self.direction == 180:
+                    movelist.append(1)
+        elif self.next[1] == n[1]:
+            if self.next[0] == n[0] - 1:
+                if self.direction == 90:
+                    movelist.append(1)
+                elif self.direction == 0:
+                    movelist.append(3)
+                    movelist.append(1)
+                elif self.direction == 180:
+                    movelist.append(2)
+                    movelist.append(1)
+                elif self.direction == 270:
+                    movelist.append(3)
+                    movelist.append(3)
+                    movelist.append(1)
+            elif self.next[0] == n[0] + 1:
+                if self.direction == 270:
+                    movelist.append(1)
+                elif self.direction == 180:
+                    movelist.append(3)
+                    movelist.append(1)
+                elif self.direction == 0:
+                    movelist.append(2)
+                    movelist.append(1)
+                elif self.direction == 90:
+                    movelist.append(3)
+                    movelist.append(3)
+                    movelist.append(1)
+        return movelist
+
+    def changedirection(direction):
+        return (direction + 360) % 360
         # ======================================================================
         # YOUR CODE ENDS
         # ======================================================================
-
